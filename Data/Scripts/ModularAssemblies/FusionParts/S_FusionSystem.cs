@@ -12,8 +12,9 @@ namespace Epstein_Fusion_DS.
 {
     internal class SFusionSystem
     {
-        public const float MegawattsPerFusionPower = 32;
-        public const float NewtonsPerFusionPower = 12800000;
+        public const float MegawattsPerFusionPower = 16;
+        public const float NewtonsPerFusionPower = 1500000;
+        public const float HydrogenPerFusionPower = 42;
         public readonly IMyCubeGrid Grid;
 
         public readonly List<SFusionArm> Arms = new List<SFusionArm>();
@@ -224,7 +225,7 @@ namespace Epstein_Fusion_DS.
             if (!MyAPIGateway.Session.CreativeMode)
             {
                 double availableGas = Tanks.Sum(t => t.FilledRatio * t.Capacity);
-                double gasNeeded = PowerGeneration * 25;
+                double gasNeeded = PowerGeneration * HydrogenPerFusionPower;
 
                 if (Tanks.Count == 0 || availableGas <= gasNeeded)
                 {

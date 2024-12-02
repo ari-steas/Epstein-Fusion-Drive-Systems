@@ -58,6 +58,9 @@ namespace Epstein_Fusion_DS.FusionParts
         /// </summary>
         internal abstract string ReadableName { get; }
 
+        internal virtual Func<IMyTerminalBlock, float> MinOverrideLimit { get; } = b => 0.01f;
+        internal virtual Func<IMyTerminalBlock, float> MaxOverrideLimit { get; } = b => 4;
+
         #region Controls
 
         private void CreateControls()
@@ -120,7 +123,7 @@ namespace Epstein_Fusion_DS.FusionParts
                 boostPowerUsageSlider.Tooltip =
                     MyStringId.GetOrCompute(
                         $"Fusion Power generation this {ReadableName} should use when Override is enabled.");
-                boostPowerUsageSlider.SetLimits(0.01f, 4.0f);
+                boostPowerUsageSlider.SetLimits(MinOverrideLimit, MaxOverrideLimit);
                 boostPowerUsageSlider.Getter = block =>
                     block.GameLogic.GetAs<FusionPart<T>>()?.OverridePowerUsageSync.Value ?? 0;
                 boostPowerUsageSlider.Setter = (block, value) =>

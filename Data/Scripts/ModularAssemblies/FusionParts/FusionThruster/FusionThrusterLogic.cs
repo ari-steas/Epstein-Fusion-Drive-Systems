@@ -42,18 +42,23 @@ namespace Epstein_Fusion_DS.FusionParts.FusionThruster
 
         internal override string ReadableName => "Thruster";
 
-        internal Dictionary<string, float> EfficiencyModifiers = new Dictionary<string, float>
+        internal override Func<IMyTerminalBlock, float> MinOverrideLimit =>
+            b => 1;
+        internal override Func<IMyTerminalBlock, float> MaxOverrideLimit =>
+            b => DriveSettings[b.BlockDefinition.SubtypeId].MaxOverclock;
+
+        internal static readonly Dictionary<string, DriveSetting> DriveSettings = new Dictionary<string, DriveSetting>
         {
-            ["ARYLNX_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_Mega_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_MUNR_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_ROCI_Epstein_Drive"] = 1.0f,
-            ["ARYLYNX_SILVERSMITH_DRIVE"] = 1.0f,
-            ["ARYLNX_RAIDER_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_QUADRA_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_SCIRCOCCO_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_DRUMMER_Epstein_Drive"] = 1.0f,
-            ["ARYLNX_PNDR_Epstein_Drive"] = 1.0f,
+            ["ARYLNX_Epstein_Drive"] =           new DriveSetting(1.00f, 1.5f, 26*1000000),
+            ["ARYLNX_Mega_Epstein_Drive"] =      new DriveSetting(1.50f, 1.5f, 375*1000000),
+            ["ARYLNX_MUNR_Epstein_Drive"] =      new DriveSetting(0.75f, 1.5f, 24*1000000),
+            ["ARYLNX_ROCI_Epstein_Drive"] =      new DriveSetting(1.16f, 1.5f, 62*1000000),
+            ["ARYLYNX_SILVERSMITH_DRIVE"] =      new DriveSetting(1.16f, 1.5f, 73*1000000),
+            ["ARYLNX_RAIDER_Epstein_Drive"] =    new DriveSetting(0.44f, 1.5f, 19*1000000),
+            ["ARYLNX_QUADRA_Epstein_Drive"] =    new DriveSetting(0.44f, 1.5f, 10*1000000),
+            ["ARYLNX_SCIRCOCCO_Epstein_Drive"] = new DriveSetting(1.00f, 1.5f, 125*1000000),
+            ["ARYLNX_DRUMMER_Epstein_Drive"] =   new DriveSetting(1.00f, 1.5f, 60*1000000),
+            ["ARYLNX_PNDR_Epstein_Drive"] =      new DriveSetting(0.80f, 1.5f, 20*1000000),
         };
 
         public override void UpdatePower(float powerGeneration, float newtonsPerFusionPower, int numberThrusters)
@@ -61,27 +66,32 @@ namespace Epstein_Fusion_DS.FusionParts.FusionThruster
             BufferPowerGeneration = powerGeneration;
             _bufferBlockCount = numberThrusters;
 
+            var overrideModifier = (OverrideEnabled ? OverridePowerUsageSync : PowerUsageSync).Value;
+
             var thrustOutput = Block.CurrentThrust;
-            var efficiencyMultiplier = EfficiencyModifiers[Block.BlockDefinition.SubtypeId];
+            var maxThrustOutput = DriveSettings[Block.BlockDefinition.SubtypeId].BaseThrust * overrideModifier;
+            // This formula is very dumb but it just about does the trick. Approaches 200% efficiency at zero usage, and 0% at 2x usage.
+            var efficiencyMultiplier = DriveSettings[Block.BlockDefinition.SubtypeId].EfficiencyModifier
+                                       *
+                                       (2 - 1/(DriveSettings[Block.BlockDefinition.SubtypeId].BaseThrust/maxThrustOutput));
 
             // Power generation consumed (per second)
-            var powerConsumption = thrustOutput * efficiencyMultiplier;
-
+            var powerConsumption = thrustOutput / newtonsPerFusionPower / efficiencyMultiplier;
 
             // Power generated (per second)
             //var thrustOutput = efficiencyMultiplier * powerConsumption * newtonsPerFusionPower;
-            _bufferThrustOutput = thrustOutput;
+            _bufferThrustOutput = maxThrustOutput;
             MaxPowerConsumption = powerConsumption / 60;
 
             InfoText.Clear();
             InfoText.AppendLine(
-                $"\nOutput: {Math.Round(thrustOutput, 1)}/{Math.Round(powerGeneration * 60 * newtonsPerFusionPower, 1)}");
-            InfoText.AppendLine($"Input: {Math.Round(powerConsumption, 1)}/{Math.Round(powerGeneration * 60, 1)}");
-            InfoText.AppendLine($"Efficiency: {Math.Round(efficiencyMultiplier * 100)}%");
+                $"\nOutput: {thrustOutput/1000000:F1}/{maxThrustOutput/1000000:F1} MN");
+            InfoText.AppendLine($"Input: {powerConsumption:F1}/{powerGeneration * 60:F1}");
+            InfoText.AppendLine($"Efficiency: {efficiencyMultiplier * 100:F1}%");
 
             // Convert back into power per tick
             if (!IsShutdown)
-                SyncMultipliers.ThrusterOutput(Block, Block.MaxThrust / Block.ThrustMultiplier);
+                SyncMultipliers.ThrusterOutput(Block, _bufferThrustOutput);
         }
 
         public void SetPowerBoost(bool value)
@@ -154,5 +164,30 @@ namespace Epstein_Fusion_DS.FusionParts.FusionThruster
         }
 
         #endregion
+
+        public struct DriveSetting
+        {
+            /// <summary>
+            /// Efficiency modifier for converting fusing rate into power.
+            /// </summary>
+            public float EfficiencyModifier;
+
+            /// <summary>
+            /// Maximum overclock, in percent.
+            /// </summary>
+            public float MaxOverclock;
+
+            /// <summary>
+            /// Default thrust output.
+            /// </summary>
+            public float BaseThrust;
+
+            public DriveSetting(float efficiencyModifier, float maxOverclock, float baseThrust)
+            {
+                EfficiencyModifier = efficiencyModifier;
+                MaxOverclock = maxOverclock;
+                BaseThrust = baseThrust;
+            }
+        }
     }
 }
