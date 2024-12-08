@@ -2,7 +2,6 @@
 using System.Linq;
 using Epstein_Fusion_DS.Communication;
 using Epstein_Fusion_DS.HeatParts.Definitions;
-using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRageMath;
 

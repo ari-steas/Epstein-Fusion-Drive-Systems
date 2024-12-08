@@ -10,8 +10,7 @@ using VRage.Utils;
 using VRageMath;
 using static VRageRender.MyBillboard;
 
-namespace Epstein_Fusion_DS.
-    DebugDraw
+namespace Epstein_Fusion_DS.HudHelpers
 {
     [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
     public class DebugDraw : MySessionComponentBase

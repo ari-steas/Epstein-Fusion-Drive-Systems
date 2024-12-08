@@ -1,6 +1,7 @@
 ﻿using Epstein_Fusion_DS.Communication;
 using System.Collections.Generic;
 using System.Linq;
+using Epstein_Fusion_DS.HudHelpers;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -80,7 +81,7 @@ namespace Epstein_Fusion_DS.HeatParts.Definitions
             var checkStartPosition = Vector3D.Transform(checkOffset * block.CubeGrid.GridSize, ref blockMatrix);
 
             if (ModularApi.IsDebug())
-                DebugDraw.DebugDraw.AddLine(checkStartPosition,
+                DebugDraw.AddLine(checkStartPosition,
                     checkStartPosition + Vector3D.TransformNormal(checkDirection, ref blockMatrix) * gridMaxExtents, Color.Bisque, 2);
 
             block.CubeGrid.RayCastCells(checkStartPosition, 

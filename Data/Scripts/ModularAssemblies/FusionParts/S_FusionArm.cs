@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Epstein_Fusion_DS.Communication;
+using Epstein_Fusion_DS.HudHelpers;
 using VRage.Game.ModAPI;
 using VRageMath;
 
@@ -75,7 +76,7 @@ namespace Epstein_Fusion_DS.
         private static bool PerformScan(IMyCubeBlock blockEntity, ref HashSet<IMyCubeBlock> parts, string stopAtSubtype)
         {
             if (ModularApi.IsDebug())
-                DebugDraw.DebugDraw.AddGridPoint(blockEntity.Position,
+                DebugDraw.AddGridPoint(blockEntity.Position,
                     blockEntity.CubeGrid, Color.Blue, 2);
 
             var connectedBlocks = ModularApi.GetConnectedBlocks(blockEntity, "Modular_Fusion", false);
