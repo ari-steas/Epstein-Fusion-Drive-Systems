@@ -6,4 +6,5 @@ Now with twice the suffering!
 
 
 By [@aristeas.] and [@hellindrosva], with some models from [@mightyodin01] and [@sovietflamiingo].
-Built with Modular Assemblies
+
+Built using Modular Assemblies.
