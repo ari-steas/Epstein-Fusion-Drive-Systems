@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Epstein_Fusion_DS.Communication;
+using Epstein_Fusion_DS.HeatParts.Definitions;
+using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRageMath;
 
@@ -7,14 +10,10 @@ namespace Epstein_Fusion_DS.HeatParts
 {
     internal class HeatSystem
     {
-        private const float HeatCapacityPerSink = 60;
-        private const float HeatDissipationPerRadiator = 5f;
-
-        private readonly List<Vector3I> _cellPositions = new List<Vector3I>();
-
-        private readonly HashSet<IMyCubeBlock> _occludedRadiators = new HashSet<IMyCubeBlock>();
-        private readonly List<IMyCubeBlock> _radiatorBlocks = new List<IMyCubeBlock>();
-        private readonly HashSet<IMyCubeBlock> _visibleRadiators = new HashSet<IMyCubeBlock>();
+        /// <summary>
+        /// Maps radiator blocks to their heat dissipation.
+        /// </summary>
+        private readonly Dictionary<IMyCubeBlock, float> _radiatorBlocks = new Dictionary<IMyCubeBlock, float>();
 
         public int AssemblyId;
 
@@ -56,19 +55,18 @@ namespace Epstein_Fusion_DS.HeatParts
 
         public void OnPartAdd(IMyCubeBlock block)
         {
-            switch (block.BlockDefinition.SubtypeName)
+            var definition = HeatPartDefinitions.GetDefinition(block.BlockDefinition.SubtypeId);
+
+            if (definition.HeatCapacity != 0)
             {
-                case "Heat_Heatsink":
-                    HeatCapacity += HeatCapacityPerSink;
-                    Parent.HeatCapacity += HeatCapacityPerSink;
-                    break;
-                case "Heat_FlatRadiator":
-                    _radiatorBlocks.Add(block);
-                    _visibleRadiators.Add(block);
-                    HeatDissipation += HeatDissipationPerRadiator;
-                    Parent.HeatDissipation += HeatDissipationPerRadiator;
-                    DoLoSCheck(block);
-                    break;
+                HeatCapacity += definition.HeatCapacity;
+                Parent.HeatCapacity += definition.HeatCapacity;
+            }
+
+            if (definition.HeatDissipation != 0)
+            {
+                _radiatorBlocks.Add(block, 0);
+                DoLoSCheck(block);
             }
 
             BlockCount++;
@@ -76,22 +74,19 @@ namespace Epstein_Fusion_DS.HeatParts
 
         public void OnPartRemove(IMyCubeBlock block)
         {
-            switch (block.BlockDefinition.SubtypeName)
-            {
-                case "Heat_Heatsink":
-                    HeatCapacity -= HeatCapacityPerSink;
-                    Parent.HeatCapacity -= HeatCapacityPerSink;
-                    break;
-                case "Heat_FlatRadiator":
-                    _radiatorBlocks.Remove(block);
-                    _occludedRadiators.Remove(block);
-                    if (_visibleRadiators.Remove(block))
-                    {
-                        HeatDissipation -= HeatDissipationPerRadiator;
-                        Parent.HeatDissipation -= HeatDissipationPerRadiator;
-                    }
+            var definition = HeatPartDefinitions.GetDefinition(block.BlockDefinition.SubtypeId);
 
-                    break;
+            if (definition.HeatCapacity != 0)
+            {
+                HeatCapacity -= definition.HeatCapacity;
+                Parent.HeatCapacity -= definition.HeatCapacity;
+            }
+
+            if (definition.HeatDissipation != 0)
+            {
+                HeatDissipation -= _radiatorBlocks[block];
+                Parent.HeatDissipation -= _radiatorBlocks[block];
+                _radiatorBlocks.Remove(block);
             }
 
             BlockCount--;
@@ -106,60 +101,35 @@ namespace Epstein_Fusion_DS.HeatParts
         private void UpdateLoS(IMySlimBlock newBlock)
         {
             Quaternion radQuaternion;
-            foreach (var radiator in _radiatorBlocks)
+
+            foreach (var radiator in _radiatorBlocks.Keys.ToArray())
             {
                 radiator.Orientation.GetQuaternion(out radQuaternion);
 
                 var offset = (Vector3I)(radQuaternion * (newBlock.Position - radiator.Position));
+                var radiatorSize = (radiator.Max - radiator.Min + Vector3I.One).AbsMax();
 
                 // If block is in front of radiator panel
-                if (offset.X == 0 && offset.Y == 0 && offset.Z > 0) DoLoSCheck(radiator);
+                if (offset.X < radiatorSize && offset.Y < radiatorSize && offset.Z < radiatorSize) DoLoSCheck(radiator);
             }
         }
 
         private void DoLoSCheck(IMyCubeBlock radiatorBlock)
         {
-            var blockMatrix = radiatorBlock.WorldMatrix;
-            var gridMaxExtents = Vector3.Distance(Parent.Grid.Max, Parent.Grid.Min) * Parent.Grid.GridSize;
+            var definition = HeatPartDefinitions.GetDefinition(radiatorBlock.BlockDefinition.SubtypeId);
+            float currentDissipation = (definition.LoSCheck?.Invoke(radiatorBlock) ?? 1) * definition.HeatDissipation;
+            float prevDissipation = _radiatorBlocks[radiatorBlock];
 
-            var doesIntersect = false;
+            if (currentDissipation == prevDissipation)
+                return;
 
-            if (ModularApi.IsDebug())
-                DebugDraw.DebugDraw.AddLine(blockMatrix.Translation,
-                    blockMatrix.Translation + blockMatrix.Backward * gridMaxExtents, Color.Bisque, 2);
+            HeatDissipation -= prevDissipation;
+            Parent.HeatDissipation -= prevDissipation;
 
-            Parent.Grid.RayCastCells(blockMatrix.Translation,
-                blockMatrix.Translation + blockMatrix.Backward * gridMaxExtents, _cellPositions);
+            HeatDissipation += currentDissipation;
+            Parent.HeatDissipation += currentDissipation;
 
-            foreach (var cellPosition in _cellPositions)
-            {
-                if (cellPosition == radiatorBlock.Position || !Parent.Grid.CubeExists(cellPosition))
-                    continue;
-
-                doesIntersect = true;
-                break;
-            }
-
-            _cellPositions.Clear();
-
-            if (doesIntersect)
-            {
-                _visibleRadiators.Remove(radiatorBlock);
-                if (_occludedRadiators.Add(radiatorBlock))
-                {
-                    HeatDissipation -= HeatDissipationPerRadiator;
-                    Parent.HeatDissipation -= HeatDissipationPerRadiator;
-                }
-            }
-            else
-            {
-                _occludedRadiators.Remove(radiatorBlock);
-                if (_visibleRadiators.Add(radiatorBlock))
-                {
-                    HeatDissipation += HeatDissipationPerRadiator;
-                    Parent.HeatDissipation += HeatDissipationPerRadiator;
-                }
-            }
+            _radiatorBlocks[radiatorBlock] = currentDissipation;
         }
     }
 }
