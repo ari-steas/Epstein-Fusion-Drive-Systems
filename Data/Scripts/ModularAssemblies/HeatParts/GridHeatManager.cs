@@ -88,7 +88,10 @@ namespace Epstein_Fusion_DS.HeatParts
 
         public void OnPartRemove(int assemblyId, IMyCubeBlock block, bool isBaseBlock)
         {
-            var system = _heatSystems[assemblyId];
+            var system = _heatSystems.GetValueOrDefault(assemblyId, null);
+            if (system == null)
+                return;
+
             system.OnPartRemove(block);
 
             if (system.BlockCount <= 0)

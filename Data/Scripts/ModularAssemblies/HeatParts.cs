@@ -37,6 +37,8 @@ namespace Epstein_Fusion_DS
                 "Heat_Heatsink",
                 "Heat_FlatRadiator",
                 "MDA_Radiator_1x2",
+                "RadiatorPanel",
+                "RadiatorBase",
             },
 
             // Allowed connection directions & whitelists, measured in blocks.
@@ -64,6 +66,18 @@ namespace Epstein_Fusion_DS
                     [Vector3I.Down*2] = Array.Empty<string>(),
                     [Vector3I.Left + Vector3I.Down] = Array.Empty<string>(),
                     [Vector3I.Right + Vector3I.Down] = Array.Empty<string>(),
+                },
+                ["RadiatorPanel"] = new Dictionary<Vector3I, string[]>
+                {
+                    [Vector3I.Down] = Array.Empty<string>(),
+                    [Vector3I.Up] = Array.Empty<string>(),
+                },
+                ["RadiatorBase"] = new Dictionary<Vector3I, string[]>
+                {
+                    [Vector3I.Up] = new[]
+                    {
+                        "RadiatorPanel"
+                    },
                 },
             }
         };

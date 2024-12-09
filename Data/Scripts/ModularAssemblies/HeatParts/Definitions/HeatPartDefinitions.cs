@@ -13,7 +13,7 @@ namespace Epstein_Fusion_DS.HeatParts.Definitions
         private static ModularDefinitionApi ModularApi => Epstein_Fusion_DS.ModularDefinition.ModularApi;
 
         public static HeatPartDefinition GetDefinition(string subtypeId) =>
-            Definitions.First(d => d.SubtypeId == subtypeId);
+            Definitions.FirstOrDefault(d => d.SubtypeId == subtypeId);
 
         public static bool HasDefinition(string subtypeId) =>
             Definitions.Any(d => d.SubtypeId == subtypeId);
@@ -65,6 +65,23 @@ namespace Epstein_Fusion_DS.HeatParts.Definitions
                         occlusionModifier += 1 / 6f;
                     if (!CheckGridIntersect(radiatorBlock, Vector3I.Down, Vector3I.Backward))
                         occlusionModifier += 1 / 6f;
+
+                    return occlusionModifier;
+                }
+            },
+            new HeatPartDefinition
+            {
+                SubtypeId = "RadiatorPanel",
+                HeatCapacity = 0,
+                HeatDissipation = 2,
+                LoSCheck = radiatorBlock =>
+                {
+                    float occlusionModifier = 0;
+
+                    if (!CheckGridIntersect(radiatorBlock, Vector3I.Zero, Vector3I.Right))
+                        occlusionModifier += 1 / 2f;
+                    if (!CheckGridIntersect(radiatorBlock, Vector3I.Zero, Vector3I.Left))
+                        occlusionModifier += 1 / 2f;
 
                     return occlusionModifier;
                 }

@@ -3,7 +3,7 @@ using VRage.Game.ModAPI;
 
 namespace Epstein_Fusion_DS.HeatParts.Definitions
 {
-    internal struct HeatPartDefinition
+    internal class HeatPartDefinition
     {
         /// <summary>
         /// The subtype of the heat part block.

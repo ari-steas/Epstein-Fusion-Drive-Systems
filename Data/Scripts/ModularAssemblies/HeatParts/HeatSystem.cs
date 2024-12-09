@@ -55,6 +55,8 @@ namespace Epstein_Fusion_DS.HeatParts
         public void OnPartAdd(IMyCubeBlock block)
         {
             var definition = HeatPartDefinitions.GetDefinition(block.BlockDefinition.SubtypeId);
+            if (definition == null)
+                return;
 
             if (definition.HeatCapacity != 0)
             {
@@ -74,6 +76,8 @@ namespace Epstein_Fusion_DS.HeatParts
         public void OnPartRemove(IMyCubeBlock block)
         {
             var definition = HeatPartDefinitions.GetDefinition(block.BlockDefinition.SubtypeId);
+            if (definition == null)
+                return;
 
             if (definition.HeatCapacity != 0)
             {
@@ -116,6 +120,9 @@ namespace Epstein_Fusion_DS.HeatParts
         private void DoLoSCheck(IMyCubeBlock radiatorBlock)
         {
             var definition = HeatPartDefinitions.GetDefinition(radiatorBlock.BlockDefinition.SubtypeId);
+            if (definition == null)
+                return;
+
             float currentDissipation = (definition.LoSCheck?.Invoke(radiatorBlock) ?? 1) * definition.HeatDissipation;
             float prevDissipation = _radiatorBlocks[radiatorBlock];
 
