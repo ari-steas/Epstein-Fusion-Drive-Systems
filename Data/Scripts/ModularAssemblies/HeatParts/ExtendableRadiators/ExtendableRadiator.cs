@@ -21,8 +21,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
 
         public IMyCubeBlock Block;
-        internal MyObjectBuilder_CubeBlock[] StoredRadiators = Array.Empty<MyObjectBuilder_CubeBlock>();
-        internal Matrix[] StoredRadiatorMatrices = Array.Empty<Matrix>();
+        internal StoredRadiator[] StoredRadiators = Array.Empty<StoredRadiator>();
         internal RadiatorAnimation Animation;
 
         private bool _isExtended = true;
@@ -98,12 +97,11 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             }
 
             foreach (var block in StoredRadiators)
-                Block.CubeGrid.AddBlock(block, true);
+                Block.CubeGrid.AddBlock(block.ObjectBuilder, true);
 
             Animation.StartExtension();
 
-            StoredRadiators = Array.Empty<MyObjectBuilder_CubeBlock>();
-            StoredRadiatorMatrices = Array.Empty<Matrix>();
+            StoredRadiators = Array.Empty<StoredRadiator>();
         }
 
         public void RetractPanels()
@@ -112,8 +110,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
                 return;
 
             IMyCubeBlock nextBlock;
-            List<MyObjectBuilder_CubeBlock> builders = new List<MyObjectBuilder_CubeBlock>();
-            List<Matrix> matrices = new List<Matrix>();
+            List<StoredRadiator> builders = new List<StoredRadiator>();
             int idx = 1;
 
             while (GetNextPanel(idx, out nextBlock))
@@ -122,14 +119,14 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
                 builder.BlockOrientation = nextBlock.Orientation;
 
-                builders.Add(builder);
-                matrices.Add(nextBlock.LocalMatrix);
+                Matrix matrix;
+                builders.Add(new StoredRadiator(builder, nextBlock.LocalMatrix, nextBlock.CalculateCurrentModel(out matrix)));
+
                 nextBlock.CubeGrid.RemoveBlock(nextBlock.SlimBlock, true);
                 idx++;
             }
 
             StoredRadiators = builders.ToArray();
-            StoredRadiatorMatrices = matrices.ToArray();
 
             Animation.StartRetraction();
         }
@@ -145,6 +142,20 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
             next = block.FatBlock;
             return true;
+        }
+
+        internal struct StoredRadiator
+        {
+            public MyObjectBuilder_CubeBlock ObjectBuilder;
+            public Matrix LocalMatrix;
+            public string Model;
+
+            public StoredRadiator(MyObjectBuilder_CubeBlock objectBuilder, Matrix localMatrix, string model)
+            {
+                ObjectBuilder = objectBuilder;
+                LocalMatrix = localMatrix;
+                Model = model;
+            }
         }
     }
 }

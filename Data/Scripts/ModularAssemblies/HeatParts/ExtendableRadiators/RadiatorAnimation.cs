@@ -1,12 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using Epstein_Fusion_DS.HudHelpers;
+using Sandbox.Engine.Physics;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRageMath;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
+using Color = VRageMath.Color;
 
 namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 {
@@ -41,6 +47,8 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             if (!IsActive)
                 return;
 
+            _animationTick++;
+
             if (IsExtending)
             {
                 // Extension animation
@@ -51,32 +59,57 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             {
                 // Retraction animation
 
-                if (_animationTick == 0)
+                if (_animationTick == 1)
                 {
-                    IMyCubeGrid grid = Radiator.Block.CubeGrid;
+                    MyEntity parentEntity = (MyEntity) Radiator.Block.CubeGrid;
+                    Matrix localMatrixOffset = Matrix.Identity;
 
                     for (int i = 0; i < Radiator.StoredRadiators.Length; i++)
                     {
-                        _animationEntities.Add(new AnimationPanel(@"Models\RadiatorPanel.mwm", Radiator.StoredRadiatorMatrices[i], (MyEntity) grid));
+                        _animationEntities.Add(new AnimationPanel(Radiator.StoredRadiators[i].Model, Radiator.StoredRadiators[i].LocalMatrix * localMatrixOffset, parentEntity));
+                        parentEntity = _animationEntities.Last();
+                        localMatrixOffset = Matrix.Invert(Radiator.StoredRadiators[i].LocalMatrix);
                     }
+                }
+
+                if (_animationTick <= 120)
+                {
+                    int idx = 0;
+                    foreach (var entity in _animationEntities)
+                    {
+                        Vector3D rotationPoint = new Vector3D(-0.5, 1.25, 0);
+
+                        //Matrix newMatrix = entity.PositionComp.LocalMatrixRef * Matrix.CreateFromAxisAngle(entity.PositionComp.LocalMatrixRef.Backward, 0.0098175f);
+                        //newMatrix.Translation = entity.PositionComp.LocalMatrixRef.Translation;
+                        Matrix newMatrix = Utils.RotateMatrixAroundPoint(entity.PositionComp.LocalMatrixRef,
+                            Vector3D.Transform(rotationPoint, entity.PositionComp.LocalMatrixRef), entity.PositionComp.LocalMatrixRef.Backward, idx == 0 ? 0.0098175 : 0.0098175*2);
+                        DebugDraw.AddPoint(Vector3D.Transform(rotationPoint, entity.WorldMatrix), Color.Blue, 0);
+                        entity.PositionComp.SetLocalMatrix(ref newMatrix);
+
+                        idx++;
+                    }
+
+                    return;
                 }
 
                 Reset();
                 return;
             }
-
-            _animationTick++;
         }
 
         private void Reset()
         {
             _animationTick = 0;
             IsActive = false;
+
+            foreach (var entity in _animationEntities)
+                entity.Close();
+            _animationEntities.Clear();
         }
 
         private sealed class AnimationPanel : MyEntity
         {
-            public AnimationPanel(string model, MatrixD localMatrix, MyEntity parent)
+            public AnimationPanel(string model, Matrix localMatrix, MyEntity parent)
             {
                 Init(null, model, parent, 1);
                 if (string.IsNullOrEmpty(model))
@@ -87,11 +120,9 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
                 //Flags |= EntityFlags.Near;
                 //Flags |= EntityFlags.Sync;
                 //Flags |= EntityFlags.NeedsDraw;
-                WorldMatrix = parent.WorldMatrix * localMatrix;
-                MyEntities.Add(this);
 
-                HudHelpers.DebugDraw.AddGps("ENTITY", WorldMatrix.Translation, 10);
-                MyAPIGateway.Utilities.ShowMessage("AnimationPanel", $"Inited new panel at {WorldMatrix.Translation:N0}");
+                PositionComp.SetLocalMatrix(ref localMatrix);
+                MyEntities.Add(this);
             }
         }
     }
