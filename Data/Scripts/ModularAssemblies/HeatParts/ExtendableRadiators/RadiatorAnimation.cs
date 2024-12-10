@@ -53,7 +53,58 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             {
                 // Extension animation
 
+                if (_animationTick == 1)
+                {
+                    MyEntity parentEntity = (MyEntity) Radiator.Block;
+                    Matrix localMatrixOffset = Matrix.Invert(Radiator.Block.LocalMatrix);
+
+                    for (int i = 0; i < Radiator.StoredRadiators.Length; i++)
+                    {
+                        _animationEntities.Add(new AnimationPanel(Radiator.StoredRadiators[i].Model, Radiator.StoredRadiators[i].LocalMatrix * localMatrixOffset, parentEntity));
+                        parentEntity = _animationEntities.Last();
+                        localMatrixOffset = Matrix.Invert(Radiator.StoredRadiators[i].LocalMatrix);
+                    }
+
+                    int idx = 0;
+                    foreach (var entity in _animationEntities)
+                    {
+                        if (idx == 0)
+                        {
+                            entity.RotateAroundLocalAxis(1.1781);
+                            entity.MoveLocalSpace(entity.RightVector * -0.75f);
+                        }
+                        else
+                        {
+                            entity.RotateAroundLocalAxis(1.1781*2);
+                        }
+
+                        idx++;
+                    }
+                }
+
+                if (_animationTick <= 120)
+                {
+                    int idx = 0;
+                    foreach (var entity in _animationEntities)
+                    {
+                        if (idx == 0)
+                        {
+                            entity.RotateAroundLocalAxis(-1.1781/120);
+                            entity.MoveLocalSpace(entity.RightVector * 0.75f/120);
+                        }
+                        else
+                        {
+                            entity.RotateAroundLocalAxis(-1.1781/120*2);
+                        }
+
+                        idx++;
+                    }
+
+                    return;
+                }
+
                 Reset();
+                Radiator.MakePanelsVisible();
             }
             else
             {

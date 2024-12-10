@@ -77,7 +77,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
         public void ExtendPanels()
         {
-            if (_isExtended)
+            if (_isExtended || Animation.IsActive)
                 return;
 
             Vector3I nextPosition = Block.Position;
@@ -97,9 +97,24 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             }
 
             foreach (var block in StoredRadiators)
-                Block.CubeGrid.AddBlock(block.ObjectBuilder, true);
+                Block.CubeGrid.AddBlock(block.ObjectBuilder, true).FatBlock.Visible = false;
 
             Animation.StartExtension();
+        }
+
+        /// <summary>
+        /// Panels start invisible for the animation to play. This makes them visible again.
+        /// </summary>
+        public void MakePanelsVisible()
+        {
+            IMyCubeBlock nextBlock;
+            int idx = 1;
+
+            while (GetNextPanel(idx, out nextBlock))
+            {
+                nextBlock.Visible = true;
+                idx++;
+            }
 
             StoredRadiators = Array.Empty<StoredRadiator>();
         }
