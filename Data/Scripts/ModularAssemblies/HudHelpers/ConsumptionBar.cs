@@ -121,7 +121,11 @@ namespace Epstein_Fusion_DS.HudHelpers
                     reactorIntegrity += reactor.Block.SlimBlock.Integrity/reactor.Block.SlimBlock.MaxIntegrity;
                     reactorCount++;
                 }
-
+                foreach (var thruster in system.Value.Thrusters)
+                {
+                    reactorIntegrity += thruster.Block.SlimBlock.Integrity/thruster.Block.SlimBlock.MaxIntegrity;
+                    reactorCount++;
+                }
             }
             reactorIntegrity /= reactorCount;
 
@@ -145,16 +149,21 @@ namespace Epstein_Fusion_DS.HudHelpers
             else
                 timeToCharge = 0;
 
-            HeaderText = $"Fusion | {(totalFusionGeneration > 0 ? "+" : "-")}{Math.Round(timeToCharge)}s";
+            //if (timeToCharge > 0)
+            //    HeaderText = $"Fusion | {(totalFusionGeneration > 0 ? "+" : "-")}{Math.Round(timeToCharge)}s";
+            //else
+            //    HeaderText = $"Fusion | {totalFusionGeneration:N0}/s";
+            HeaderText = $"Fusion | {totalFusionStored/totalFusionCapacity * 100:N0}%";
+
             _noticeLabel.Text = new RichText
             {
-                {"Reactor Integrity: ", GlyphFormat.White},
+                {"Integrity: ", GlyphFormat.White},
                 {(reactorIntegrity*100).ToString("N0") + "%", GlyphFormat.White.WithColor(reactorIntegrity > 0.52 ? Color.White : Color.Red)}
             };
 
             if (HeatManager.I.GetGridHeatLevel(playerGrid) > 0.8f)
             {
-                _noticeLabel.TextBoard.Append("\nTAKING THERMAL DAMAGE", GlyphFormat.White.WithColor(Color.Red));
+                _noticeLabel.TextBoard.Append("\nTHERMAL DAMAGE", GlyphFormat.White.WithColor(Color.Red));
 
                 if (_soundEmitter == null)
                 {
