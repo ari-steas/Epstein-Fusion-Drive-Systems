@@ -22,7 +22,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
         public bool IsActive = false;
         public bool IsExtending = false;
 
-        private HashSet<MyEntity> _animationEntities = new HashSet<MyEntity>();
+        private HashSet<AnimationPanel> _animationEntities = new HashSet<AnimationPanel>();
 
         public RadiatorAnimation(ExtendableRadiator radiator)
         {
@@ -61,8 +61,8 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
                 if (_animationTick == 1)
                 {
-                    MyEntity parentEntity = (MyEntity) Radiator.Block.CubeGrid;
-                    Matrix localMatrixOffset = Matrix.Identity;
+                    MyEntity parentEntity = (MyEntity) Radiator.Block;
+                    Matrix localMatrixOffset = Matrix.Invert(Radiator.Block.LocalMatrix);
 
                     for (int i = 0; i < Radiator.StoredRadiators.Length; i++)
                     {
@@ -77,14 +77,15 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
                     int idx = 0;
                     foreach (var entity in _animationEntities)
                     {
-                        Vector3D rotationPoint = new Vector3D(-0.5, 1.25, 0);
-
-                        //Matrix newMatrix = entity.PositionComp.LocalMatrixRef * Matrix.CreateFromAxisAngle(entity.PositionComp.LocalMatrixRef.Backward, 0.0098175f);
-                        //newMatrix.Translation = entity.PositionComp.LocalMatrixRef.Translation;
-                        Matrix newMatrix = Utils.RotateMatrixAroundPoint(entity.PositionComp.LocalMatrixRef,
-                            Vector3D.Transform(rotationPoint, entity.PositionComp.LocalMatrixRef), entity.PositionComp.LocalMatrixRef.Backward, idx == 0 ? 0.0098175 : 0.0098175*2);
-                        DebugDraw.AddPoint(Vector3D.Transform(rotationPoint, entity.WorldMatrix), Color.Blue, 0);
-                        entity.PositionComp.SetLocalMatrix(ref newMatrix);
+                        if (idx == 0)
+                        {
+                            entity.RotateAroundLocalAxis(1.1781/120);
+                            entity.MoveLocalSpace(entity.RightVector * -0.75f/120);
+                        }
+                        else
+                        {
+                            entity.RotateAroundLocalAxis(1.1781/120*2);
+                        }
 
                         idx++;
                     }
@@ -109,6 +110,13 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
         private sealed class AnimationPanel : MyEntity
         {
+            /// <summary>
+            /// As the block rotates, its orientation changes. RightVector is used to translate the block relative to itself after rotation.
+            /// </summary>
+            public readonly Vector3D RightVector;
+            private Vector3D _rotationPoint = new Vector3D(-0.5, 1.25, 0);
+            private readonly bool _isUpsideDown;
+
             public AnimationPanel(string model, Matrix localMatrix, MyEntity parent)
             {
                 Init(null, model, parent, 1);
@@ -116,13 +124,32 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
                     Flags &= ~EntityFlags.Visible;
                 Save = false;
                 NeedsWorldMatrix = true;
-                //Flags |= EntityFlags.Visible;
-                //Flags |= EntityFlags.Near;
-                //Flags |= EntityFlags.Sync;
-                //Flags |= EntityFlags.NeedsDraw;
 
                 PositionComp.SetLocalMatrix(ref localMatrix);
                 MyEntities.Add(this);
+
+                RightVector = PositionComp.LocalMatrixRef.Right;
+
+                _isUpsideDown = PositionComp.LocalMatrixRef.Up.Y * PositionComp.LocalMatrixRef.Translation.Y > 0;
+                if (_isUpsideDown)
+                    _rotationPoint *= -1;
+            }
+
+            public void RotateAroundLocalAxis(double amount)
+            {
+                Matrix newMatrix = Utils.RotateMatrixAroundPoint(PositionComp.LocalMatrixRef,
+                    Vector3D.Transform(_rotationPoint, PositionComp.LocalMatrixRef), PositionComp.LocalMatrixRef.Backward, amount);
+                PositionComp.SetLocalMatrix(ref newMatrix);
+            }
+
+            public void MoveLocalSpace(Vector3 amount)
+            {
+                if (_isUpsideDown)
+                    amount *= -1;
+
+                Matrix newMatrix = PositionComp.LocalMatrixRef;
+                newMatrix.Translation += amount;
+                PositionComp.SetLocalMatrix(ref newMatrix);
             }
         }
     }

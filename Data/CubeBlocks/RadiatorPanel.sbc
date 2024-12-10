@@ -20,9 +20,13 @@
 			<CriticalComponent Subtype="SteelPlate" Index="0"/>
 			<BlockPairName>RadiatorPanel</BlockPairName>
 			<MountPoints>
-				<MountPoint Side="Top" StartX="0.00" StartY="0.00" EndX="1.00" EndY="1.00"/>
-				<MountPoint Side="Bottom" StartX="0.00" StartY="0.00" EndX="1.00" EndY="1.00"/>
+				<MountPoint Side="Top" StartX="0.25" StartY="0.05" EndX="0.35" EndY="0.15"/>
+				<MountPoint Side="Top" StartX="0.25" StartY="0.85" EndX="0.35" EndY="0.95"/>
+				<MountPoint Side="Bottom" StartX="0.65" StartY="0.85" EndX="0.75" EndY="0.95"/>
+				<MountPoint Side="Bottom" StartX="0.65" StartY="0.05" EndX="0.75" EndY="0.15"/>
 			</MountPoints>
+			<MirroringX>Y</MirroringX>
+			<MirroringY>X</MirroringY>
 		</Definition>
 	</CubeBlocks>
 </Definitions>
