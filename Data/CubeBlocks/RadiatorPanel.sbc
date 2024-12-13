@@ -17,7 +17,7 @@
 			<ModelOffset x="0" y="0" z="0"/>
 			<Model>Models\RadiatorPanel.mwm</Model>
 			<Components>
-				<Component Subtype="SteelPlate" Count="75"/>
+				<Component Subtype="SteelPlate" Count="25"/>
 			</Components>
 			<CriticalComponent Subtype="SteelPlate" Index="0"/>
 			<BlockPairName>RadiatorPanel</BlockPairName>

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using Epstein_Fusion_DS.Communication;
 using Epstein_Fusion_DS.HudHelpers;
+using ProtoBuf;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
@@ -14,6 +18,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TerminalBlock), false, "ExtendableRadiatorBase")]
     internal class ExtendableRadiator : MyGameLogicComponent
     {
+        public static readonly Guid RadiatorGuid = new Guid("e6b87818-5fd8-47a6-a480-3365e20214e1");
         public static readonly string[] ValidPanelSubtypes =
         {
             "RadiatorPanel",
@@ -61,6 +66,17 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             if (Block?.CubeGrid?.Physics == null)
                 return;
 
+            LoadSettings();
+
+            try
+            {
+                SaveSettings();
+            }
+            catch (Exception ex)
+            {
+                ModularDefinition.ModularApi.Log(ex.ToString());
+            }
+
             Animation = new RadiatorAnimation(this);
             NeedsUpdate |= MyEntityUpdateEnum.EACH_FRAME;
             //NeedsUpdate |= MyEntityUpdateEnum.EACH_100TH_FRAME;
@@ -73,6 +89,59 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             // This is stupid, but prevents the mod profiler cost from being incurred every tick per block when inactive
             if (Animation.IsActive)
                 Animation.UpdateTick();
+        }
+
+        public override bool IsSerialized()
+        {
+            try
+            {
+                SaveSettings();
+            }
+            catch (Exception ex)
+            {
+                ModularDefinition.ModularApi.Log(ex.ToString());
+            }
+
+            return base.IsSerialized();
+        }
+
+        internal void SaveSettings()
+        {
+            if (Block == null)
+                return; // called too soon or after it was already closed, ignore
+
+            if (StoredRadiators == null)
+                throw new NullReferenceException($"Settings == null on entId={Entity?.EntityId}; Test log 1");
+
+            if (MyAPIGateway.Utilities == null)
+                throw new NullReferenceException($"MyAPIGateway.Utilities == null; entId={Entity?.EntityId}; Test log 2");
+
+            if (Block.Storage == null)
+                Block.Storage = new MyModStorageComponent();
+
+            Block.Storage.SetValue(RadiatorGuid, Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(StoredRadiators)));
+        }
+
+        internal void LoadSettings()
+        {
+            if (Block.Storage == null)
+                return;
+            
+            string rawData;
+            if (!Block.Storage.TryGetValue(RadiatorGuid, out rawData))
+                return;
+
+            try
+            {
+                var loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<StoredRadiator[]>(Convert.FromBase64String(rawData)) ?? Array.Empty<StoredRadiator>();
+
+                StoredRadiators = loadedSettings;
+                _isExtended = StoredRadiators.Length == 0;
+            }
+            catch (Exception e)
+            {
+                ModularDefinition.ModularApi.Log(e.ToString());
+            }
         }
 
         public void ExtendPanels()
@@ -159,11 +228,12 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
             return true;
         }
 
+        [ProtoContract]
         internal struct StoredRadiator
         {
-            public MyObjectBuilder_CubeBlock ObjectBuilder;
-            public Matrix LocalMatrix;
-            public string Model;
+            [ProtoMember(1)] public MyObjectBuilder_CubeBlock ObjectBuilder;
+            [ProtoMember(2)] public Matrix LocalMatrix;
+            [ProtoMember(3)] public string Model;
 
             public StoredRadiator(MyObjectBuilder_CubeBlock objectBuilder, Matrix localMatrix, string model)
             {

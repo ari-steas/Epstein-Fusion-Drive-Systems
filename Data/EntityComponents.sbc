@@ -1,5 +1,6 @@
 <Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <EntityComponents>
+	  
     <EntityComponent xsi:type="MyObjectBuilder_ModStorageComponentDefinition">
       <Id>
         <TypeId>ModStorageComponent</TypeId>
@@ -9,5 +10,16 @@
         <guid>36a45185-2e80-461c-9f1c-e2140a47a4df</guid>
       </RegisteredStorageGuids>
     </EntityComponent>
+	  
+	<EntityComponent xsi:type="MyObjectBuilder_ModStorageComponentDefinition">
+	  <Id>
+		  <TypeId>ModStorageComponent</TypeId>
+		  <SubtypeId>ExtendableRadiatorStorage</SubtypeId>
+	  </Id>
+	  <RegisteredStorageGuids>
+		  <guid>e6b87818-5fd8-47a6-a480-3365e20214e1</guid>
+	  </RegisteredStorageGuids>
+	</EntityComponent>
+	  
   </EntityComponents>
 </Definitions>
