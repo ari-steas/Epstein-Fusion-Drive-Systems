@@ -3,22 +3,22 @@
 	<CubeBlocks>
 		<Definition>
 			<Id>
-				<TypeId>TerminalBlock</TypeId>
-				<SubtypeId>RadiatorBase</SubtypeId>
+				<TypeId>CubeBlock</TypeId>
+				<SubtypeId>ExtendableRadiatorBase</SubtypeId>
 			</Id>
-			<DisplayName>{LOC:DisplayName_RadiatorBase}</DisplayName>
-			<Description>{LOC:Description_RadiatorBase}</Description>
+			<DisplayName>{LOC:DisplayName_ExtendableRadiatorBase}</DisplayName>
+			<Description>{LOC:Description_ExtendableRadiatorBase}</Description>
 			<Icon>Textures\GUI\Icons\AstronautBackpack.dds</Icon>
 			<CubeSize>Large</CubeSize>
 			<BlockTopology>TriangleMesh</BlockTopology>
 			<Size x="1" y="1" z="1"/>
 			<ModelOffset x="0" y="0" z="0"/>
-			<Model>Models\RadiatorBase.mwm</Model>
+			<Model>Models\ExtendableRadiatorBase.mwm</Model>
 			<Components>
 				<Component Subtype="SteelPlate" Count="10"/>
 			</Components>
 			<CriticalComponent Subtype="SteelPlate" Index="0"/>
-			<BlockPairName>RadiatorBase</BlockPairName>
+			<BlockPairName>ExtendableRadiatorBase</BlockPairName>
 		</Definition>
 	</CubeBlocks>
 </Definitions>

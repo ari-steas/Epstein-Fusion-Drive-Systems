@@ -11,7 +11,7 @@ using VRageMath;
 
 namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TerminalBlock), false, "RadiatorBase")]
+    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TerminalBlock), false, "ExtendableRadiatorBase")]
     internal class ExtendableRadiator : MyGameLogicComponent
     {
         public static readonly string[] ValidPanelSubtypes =
