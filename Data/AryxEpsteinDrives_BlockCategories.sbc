@@ -36,7 +36,10 @@
 		<string>Caster_CentralPipe_90</string>
 		<string>Caster_CentralPipe_T</string>
 		<string>Caster_Reactor</string>
-		<string>Heat_Heatsink</string>
+		<string>RadiatorPanel</string>
+		<string>ExtendableRadiatorBase</string>
+		<string>Heat_FlatRadiator</string>
+		<string>MDA_Radiator_1x2</string>
 	</ItemIds>
 </Category>
 

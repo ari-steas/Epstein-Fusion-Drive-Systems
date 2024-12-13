@@ -17,9 +17,14 @@
 			<ModelOffset x="0" y="0" z="0"/>
 			<Model>Models\ExtendableRadiatorBase.mwm</Model>
 			<Components>
-				<Component Subtype="SteelPlate" Count="10"/>
+				<Component Subtype="SteelPlate" Count="10" />
+				<Component Subtype="Construction" Count="10" />
+				<Component Subtype="LargeTube" Count="4" />
+				<Component Subtype="Motor" Count="4" />
+				<Component Subtype="Computer" Count="2" />
+				<Component Subtype="SteelPlate" Count="5" />
 			</Components>
-			<CriticalComponent Subtype="SteelPlate" Index="0"/>
+			<CriticalComponent Subtype="Computer" Index="0" />
 			<BlockPairName>ExtendableRadiatorBase</BlockPairName>
 		</Definition>
 	</CubeBlocks>
