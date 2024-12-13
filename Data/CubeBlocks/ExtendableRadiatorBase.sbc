@@ -3,12 +3,14 @@
 	<CubeBlocks>
 		<Definition>
 			<Id>
-				<TypeId>CubeBlock</TypeId>
+				<TypeId>TerminalBlock</TypeId>
 				<SubtypeId>ExtendableRadiatorBase</SubtypeId>
 			</Id>
-			<DisplayName>{LOC:DisplayName_ExtendableRadiatorBase}</DisplayName>
-			<Description>{LOC:Description_ExtendableRadiatorBase}</Description>
-			<Icon>Textures\GUI\Icons\AstronautBackpack.dds</Icon>
+			<DisplayName>Retractable Radiator Base</DisplayName>
+			<Description>
+				Allows attached radiator panels to be retracted and extended.
+			</Description>
+			<Icon>Textures\GUI\Icons\Cubes\ExtendableRadiatorBase.dds</Icon>
 			<CubeSize>Large</CubeSize>
 			<BlockTopology>TriangleMesh</BlockTopology>
 			<Size x="1" y="1" z="1"/>

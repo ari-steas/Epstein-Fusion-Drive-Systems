@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI;
+﻿using System.Text;
+using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.Utils;
 
@@ -43,9 +44,36 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
                     var logic = b?.GameLogic?.GetAs<ExtendableRadiator>();
                     if (logic != null)
                         logic.IsExtended = v;
+                    c.UpdateVisual();
                 };
 
                 MyAPIGateway.TerminalControls.AddControl<IMyTerminalBlock>(c);
+            }
+
+            {
+                var a = MyAPIGateway.TerminalControls.CreateAction<IMyTerminalBlock>("Radiator_ToggleExtended");
+                a.Name = new StringBuilder("Toggle Extension");
+                a.ValidForGroups = true;
+
+                a.Enabled = CustomVisibleCondition;
+
+                a.Writer = (block, builder) =>
+                {
+                    builder.Clear();
+                    if (block?.GameLogic?.GetAs<ExtendableRadiator>()?.IsExtended ?? false)
+                        builder.Append("Extended");
+                    else
+                        builder.Append("Retracted");
+                };
+
+                a.Action = (block) =>
+                {
+                    var logic = block?.GameLogic?.GetAs<ExtendableRadiator>();
+                    if (logic != null)
+                        logic.IsExtended = !logic.IsExtended;
+                };
+
+                MyAPIGateway.TerminalControls.AddAction<IMyTerminalBlock>(a);
             }
         }
     }
