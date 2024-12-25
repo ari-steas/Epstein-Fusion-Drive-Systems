@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Epstein_Fusion_DS.Communication;
 using Epstein_Fusion_DS.HudHelpers;
 using ProtoBuf;
+using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -137,6 +138,23 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
                 StoredRadiators = loadedSettings;
                 _isExtended = StoredRadiators.Length == 0;
+
+                for (int i = 0; i < StoredRadiators.Length; i++)
+                {
+                    if (Block.LocalMatrix == StoredRadiators[i].BaseLocalMatrix)
+                        break;
+
+                    var matrix = Matrix.Invert(StoredRadiators[i].BaseLocalMatrix) * Block.LocalMatrix;
+
+                    StoredRadiators[i].ObjectBuilder.Min = Block.Position + (Vector3I)Block.LocalMatrix.Up * (i+1);
+                    StoredRadiators[i].LocalMatrix *= matrix;
+                    StoredRadiators[i].ObjectBuilder.Orientation = Quaternion.CreateFromRotationMatrix(StoredRadiators[i].LocalMatrix);
+
+                    var matrix2 = StoredRadiators[i].LocalMatrix;
+                    StoredRadiators[i].ObjectBuilder.BlockOrientation = new MyBlockOrientation(ref matrix2);
+
+                    StoredRadiators[i].BaseLocalMatrix = Block.LocalMatrix;
+                }
             }
             catch (Exception e)
             {
@@ -151,24 +169,41 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
             Vector3I nextPosition = Block.Position;
 
-            // TODO move this to clientside
-            for (int i = 0; i < StoredRadiators.Length; i++)
+            try
             {
-                nextPosition += (Vector3I)(Block.LocalMatrix.Up * (i + 1));
-
-                if (Block.CubeGrid.CubeExists(nextPosition))
+                // TODO move this to clientside
+                for (int i = 0; i < StoredRadiators.Length; i++)
                 {
-                    MyAPIGateway.Utilities.ShowNotification("Block already exists at position!");
-                    DebugDraw.AddGridPoint(nextPosition, Block.CubeGrid, Color.Red, 4);
-                    _isExtended = false;
-                    return;
+                    nextPosition += (Vector3I)(Block.LocalMatrix.Up * (i + 1));
+
+                    if (Block.CubeGrid.CubeExists(nextPosition))
+                    {
+                        MyAPIGateway.Utilities.ShowNotification("Block already exists at position!");
+                        DebugDraw.AddGridPoint(nextPosition, Block.CubeGrid, Color.Red, 4);
+                        _isExtended = false;
+                        return;
+                    }
                 }
+
+                for (int i = 0; i < StoredRadiators.Length; i++)
+                {
+                    DebugDraw.AddGridPoint(StoredRadiators[i].ObjectBuilder.Min, Block.CubeGrid, Color.Blue, 4);
+                    DebugDraw.AddGridPoint(StoredRadiators[i].ObjectBuilder.Min + Vector3I.Transform(Vector3I.Forward, StoredRadiators[i].ObjectBuilder.Orientation), Block.CubeGrid, Color.Red, 4);
+                    StoredRadiators[i].ObjectBuilder.Name = null;
+
+                    var newBlock = Block.CubeGrid.AddBlock(StoredRadiators[i].ObjectBuilder, true);
+                    if (newBlock?.FatBlock != null)
+                        newBlock.FatBlock.Visible = false;
+                    else
+                        ModularDefinition.ModularApi.Log($"Stored radiator panel is null!\n    Builder: {StoredRadiators[i].ObjectBuilder == null}\n    Slimblock: {newBlock == null}\n    Fatblock: {newBlock?.FatBlock == null}");
+                }
+
+                Animation.StartExtension();
             }
-
-            foreach (var block in StoredRadiators)
-                Block.CubeGrid.AddBlock(block.ObjectBuilder, true).FatBlock.Visible = false;
-
-            Animation.StartExtension();
+            catch (Exception ex)
+            {
+                ModularDefinition.ModularApi.Log(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -204,7 +239,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
                 builder.BlockOrientation = nextBlock.Orientation;
 
                 Matrix matrix;
-                builders.Add(new StoredRadiator(builder, nextBlock.LocalMatrix, nextBlock.CalculateCurrentModel(out matrix)));
+                builders.Add(new StoredRadiator(builder, nextBlock.LocalMatrix, nextBlock.CalculateCurrentModel(out matrix), Block.LocalMatrix));
 
                 nextBlock.CubeGrid.RemoveBlock(nextBlock.SlimBlock, true);
                 idx++;
@@ -233,13 +268,16 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
         {
             [ProtoMember(1)] public MyObjectBuilder_CubeBlock ObjectBuilder;
             [ProtoMember(2)] public Matrix LocalMatrix;
+            [ProtoMember(4)] public Matrix BaseLocalMatrix;
             [ProtoMember(3)] public string Model;
 
-            public StoredRadiator(MyObjectBuilder_CubeBlock objectBuilder, Matrix localMatrix, string model)
+
+            public StoredRadiator(MyObjectBuilder_CubeBlock objectBuilder, Matrix localMatrix, string model, Matrix baseLocalMatrix)
             {
                 ObjectBuilder = objectBuilder;
                 LocalMatrix = localMatrix;
                 Model = model;
+                BaseLocalMatrix = baseLocalMatrix;
             }
         }
     }

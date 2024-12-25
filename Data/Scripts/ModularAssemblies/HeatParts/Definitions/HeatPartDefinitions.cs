@@ -86,6 +86,48 @@ namespace Epstein_Fusion_DS.HeatParts.Definitions
                     return occlusionModifier;
                 }
             },
+            new HeatPartDefinition
+            {
+                SubtypeId = "ActiveRadiator",
+                HeatCapacity = 60,
+                HeatDissipation = 50,
+                LoSCheck = radiatorBlock =>
+                {
+                    float occlusionModifier = 0;
+
+                    Vector3I[] checkPositions = 
+                    {
+                        new Vector3I(0, 0, -2),
+
+                        new Vector3I(1, 0, -1),
+                        new Vector3I(0, 0, -1),
+                        new Vector3I(-1, 0, -1),
+
+                        new Vector3I(2, 0, 0),
+                        new Vector3I(1, 0, 0),
+                        Vector3I.Zero,
+                        new Vector3I(-1, 0, 0),
+                        new Vector3I(-2, 0, 0),
+
+                        new Vector3I(1, 0, 1),
+                        new Vector3I(0, 0, 1),
+                        new Vector3I(-1, 0, 1),
+
+                        new Vector3I(0, 0, 2),
+                    };
+
+                    foreach (var pos in checkPositions)
+                        if (!CheckGridIntersect(radiatorBlock, pos, Vector3I.Up))
+                            occlusionModifier += 1f / checkPositions.Length;
+
+                    if (!CheckGridIntersect(radiatorBlock, Vector3I.Zero, Vector3I.Up))
+                        occlusionModifier += 1 / 2f;
+                    if (!CheckGridIntersect(radiatorBlock, Vector3I.Right, Vector3I.Up))
+                        occlusionModifier += 1 / 2f;
+
+                    return occlusionModifier;
+                }
+            }
         };
 
         private static bool CheckGridIntersect(IMyCubeBlock block, Vector3I checkOffset, Vector3I checkDirection)

@@ -39,6 +39,7 @@ namespace Epstein_Fusion_DS
                 "MDA_Radiator_1x2",
                 "RadiatorPanel",
                 "ExtendableRadiatorBase",
+                "ActiveRadiator",
             },
 
             // Allowed connection directions & whitelists, measured in blocks.
