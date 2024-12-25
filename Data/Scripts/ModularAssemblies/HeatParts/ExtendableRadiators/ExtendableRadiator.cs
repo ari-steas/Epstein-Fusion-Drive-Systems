@@ -187,8 +187,6 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
                 for (int i = 0; i < StoredRadiators.Length; i++)
                 {
-                    DebugDraw.AddGridPoint(StoredRadiators[i].ObjectBuilder.Min, Block.CubeGrid, Color.Blue, 4);
-                    DebugDraw.AddGridPoint(StoredRadiators[i].ObjectBuilder.Min + Vector3I.Transform(Vector3I.Forward, StoredRadiators[i].ObjectBuilder.Orientation), Block.CubeGrid, Color.Red, 4);
                     StoredRadiators[i].ObjectBuilder.Name = null;
 
                     var newBlock = Block.CubeGrid.AddBlock(StoredRadiators[i].ObjectBuilder, true);

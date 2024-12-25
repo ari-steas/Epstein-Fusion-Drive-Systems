@@ -10,7 +10,7 @@
 				Rotary Active Radiator
 			</DisplayName>
 			<Description>
-				Provides massive heat dissipation when in atmosphere, and a reduced heat dissipation when in space.
+				Provides massive heat dissipation at the cost of a high surface area.
 			</Description>
 			<Icon>Textures\GUI\Icons\AstronautBackpack.dds</Icon>
 			<CubeSize>Large</CubeSize>

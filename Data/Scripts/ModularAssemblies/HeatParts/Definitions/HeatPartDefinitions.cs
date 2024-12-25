@@ -97,23 +97,17 @@ namespace Epstein_Fusion_DS.HeatParts.Definitions
 
                     Vector3I[] checkPositions = 
                     {
-                        new Vector3I(0, 0, -2),
-
                         new Vector3I(1, 0, -1),
                         new Vector3I(0, 0, -1),
                         new Vector3I(-1, 0, -1),
 
-                        new Vector3I(2, 0, 0),
                         new Vector3I(1, 0, 0),
                         Vector3I.Zero,
                         new Vector3I(-1, 0, 0),
-                        new Vector3I(-2, 0, 0),
 
                         new Vector3I(1, 0, 1),
                         new Vector3I(0, 0, 1),
                         new Vector3I(-1, 0, 1),
-
-                        new Vector3I(0, 0, 2),
                     };
 
                     foreach (var pos in checkPositions)

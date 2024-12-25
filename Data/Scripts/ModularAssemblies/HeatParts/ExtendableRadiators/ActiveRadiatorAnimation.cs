@@ -43,7 +43,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
         {
             float heatLevel = HeatManager.I.GetGridHeatLevel(Block.CubeGrid);
 
-            Matrix refMatrix = MatrixD.CreateFromAxisAngle(Vector3D.Up, 0.1 * heatLevel) * FanPart.PositionComp.LocalMatrixRef;
+            Matrix refMatrix = MatrixD.CreateFromAxisAngle(Vector3D.Up, -0.1 * heatLevel) * FanPart.PositionComp.LocalMatrixRef;
             refMatrix.Translation = FanPart.PositionComp.LocalMatrixRef.Translation;
             FanPart.PositionComp.SetLocalMatrix(ref refMatrix);
 
@@ -56,7 +56,7 @@ namespace Epstein_Fusion_DS.HeatParts.ExtendableRadiators
 
         public override void Close()
         {
-            Particle.Close();
+            Particle?.Close();
         }
     }
 }
