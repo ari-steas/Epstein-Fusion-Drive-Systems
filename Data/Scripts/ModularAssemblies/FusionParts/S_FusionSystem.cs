@@ -37,6 +37,8 @@ namespace Epstein_Fusion_DS.
         /// </summary>
         public float PowerGeneration;
 
+        public float MaxPowerGeneration;
+
         public readonly List<FusionReactorLogic> Reactors = new List<FusionReactorLogic>();
         public readonly List<FusionThrusterLogic> Thrusters = new List<FusionThrusterLogic>();
         public readonly List<IMyGasTank> Tanks = new List<IMyGasTank>();
@@ -155,6 +157,7 @@ namespace Epstein_Fusion_DS.
                 var logic = part.GameLogic.GetAs<FusionThrusterLogic>();
                 logic.MemberSystem = null;
                 Thrusters.Remove(logic);
+                logic.UpdatePower(PowerGeneration, NewtonsPerFusionPower, Thrusters.Count);
             }
 
             if (part is IMyReactor)
@@ -162,6 +165,7 @@ namespace Epstein_Fusion_DS.
                 var logic = part.GameLogic.GetAs<FusionReactorLogic>();
                 logic.MemberSystem = null;
                 Reactors.Remove(logic);
+                logic.UpdatePower(PowerGeneration, NewtonsPerFusionPower, Thrusters.Count);
             }
 
             if (part is IMyGasTank)
@@ -184,7 +188,6 @@ namespace Epstein_Fusion_DS.
 
         private void UpdatePower(bool updateReactors = false)
         {
-            //var generationModifier = 1 / (HeatManager.I.GetGridHeatLevel(Grid) + 0.5f);
             var generationModifier = 1;
             var powerGeneration = float.Epsilon;
             var powerCapacity = float.Epsilon;
@@ -215,6 +218,7 @@ namespace Epstein_Fusion_DS.
 
             // Subtract power usage afterwards so that all reactors have the same stats.
             PowerGeneration = powerGeneration;
+            MaxPowerGeneration = PowerGeneration;
             MaxPowerStored = powerCapacity;
             PowerConsumption = totalPowerUsage;
 

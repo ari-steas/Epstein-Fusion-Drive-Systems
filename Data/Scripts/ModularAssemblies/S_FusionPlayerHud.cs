@@ -76,7 +76,8 @@ namespace Epstein_Fusion_DS
                             continue;
 
                         MyVisualScriptLogicProvider.AddQuestlogDetailLocal(
-                            $"[{system.PhysicalAssemblyId}] Power: {Math.Round(system.PowerStored / system.MaxPowerStored * 100f)}% ({Math.Round(system.MaxPowerStored)} @ {Math.Round(system.PowerGeneration * 60, 1)}/s) | Loops: {system.Arms.Count} | Heat: -{HeatManager.I.GetGridHeatDissipation(system.Grid):N0} +{HeatManager.I.GetGridHeatGeneration(system.Grid):N0} ({HeatManager.I.GetGridHeatLevel(system.Grid)*100:F1}%)",
+                            $"[({system.PhysicalAssemblyId})] Thrusters: {system.Thrusters.Count} | Reactors: {system.Reactors.Count} | Loops: {system.Arms.Count} | Heat: -{HeatManager.I.GetGridHeatDissipation(system.Grid):N0} +{HeatManager.I.GetGridHeatGeneration(system.Grid):N0} ({HeatManager.I.GetGridHeatLevel(system.Grid)*100:F1}%)\n" + 
+                            $"    Stored: {system.PowerStored:N0}/{system.MaxPowerStored:N0} | Generation: {system.PowerGeneration:N1}/{system.MaxPowerGeneration:N1}",
                             false, false);
                         displayedCount++;
                     }
