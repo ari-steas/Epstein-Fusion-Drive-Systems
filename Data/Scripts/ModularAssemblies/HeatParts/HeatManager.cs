@@ -34,6 +34,12 @@ namespace Epstein_Fusion_DS.HeatParts
                 system.UpdateTick();
         }
 
+        public void RemoveAssembly(int assemblyId)
+        {
+            foreach (var system in _heatSystems.Values)
+                system.RemoveAssembly(assemblyId);
+        }
+
         public float GetGridHeatLevel(IMyCubeGrid grid)
         {
             return _heatSystems.GetValueOrDefault(grid, null)?.HeatRatio ?? -1;

@@ -15,7 +15,7 @@ namespace Epstein_Fusion_DS
             // Unique name of the definition.
             Name = "Modular_Fusion",
 
-            OnInit = () => { SFusionManager.I.FusionDefinition = this; },
+            OnInit = null,
 
             // Triggers whenever a new part is added to an assembly.
             OnPartAdd = SFusionManager.I.OnPartAdd,
@@ -24,9 +24,11 @@ namespace Epstein_Fusion_DS
             OnPartRemove = SFusionManager.I.OnPartRemove,
 
             // Triggers whenever a part is destroyed, simultaneously with OnPartRemove
-            OnPartDestroy = (physicalAssemblyId, blockEntity, isBaseBlock) =>
+            OnPartDestroy = null,
+
+            OnAssemblyClose = assemblyId =>
             {
-                // You can remove this function, and any others if need be.
+                SFusionManager.I.FusionSystems.Remove(assemblyId);
             },
 
             // The most important block in an assembly. Connection checking starts here.

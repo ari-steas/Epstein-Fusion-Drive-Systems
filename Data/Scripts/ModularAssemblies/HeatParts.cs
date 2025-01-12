@@ -17,7 +17,7 @@ namespace Epstein_Fusion_DS
             // Unique name of the definition.
             Name = "Modular_Heat",
 
-            OnInit = () => { SFusionManager.I.HeatDefinition = this; },
+            OnInit = null,
 
             // Triggers whenever a new part is added to an assembly.
             OnPartAdd = HeatManager.I.OnPartAdd,
@@ -27,6 +27,11 @@ namespace Epstein_Fusion_DS
 
             // Triggers whenever a part is destroyed, simultaneously with OnPartRemove
             OnPartDestroy = null,
+
+            OnAssemblyClose = assemblyId =>
+            {
+                HeatManager.I.RemoveAssembly(assemblyId);
+            },
 
             // The most important block in an assembly. Connection checking starts here.
             BaseBlockSubtype = null,
