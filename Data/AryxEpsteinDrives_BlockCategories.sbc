@@ -40,6 +40,7 @@
 		<string>ExtendableRadiatorBase</string>
 		<string>Heat_FlatRadiator</string>
 		<string>MDA_Radiator_1x2</string>
+		<string>ActiveRadiator</string>
 	</ItemIds>
 </Category>
 
